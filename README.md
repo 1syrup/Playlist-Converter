@@ -1,4 +1,4 @@
-# Fully functional Flask application written in Python that enables the user to copy their music playlists between streaming platforms
+###Fully functional Flask application written in Python that enables the user to copy their music playlists between streaming platforms
 Currently implemented Spotify API and Youtube Music (Google) API; Allows users to login with spotify and google accounts<br/>
 Fully implemented token-based security using OAuth 2.0 client credentials<br/>
 Fully implemented token refresh logic<br/>
