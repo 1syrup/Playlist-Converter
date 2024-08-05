@@ -3,5 +3,5 @@ Currently implemented Spotify API and Youtube Music (Google) API; Allows users t
 Fully implemented token-based security using OAuth 2.0 client credentials<br/>
 Fully implemented token refresh logic<br/>
 Plans to implement Apple Music - requires Apple Developer Program subscription to access Apple ID API ($99 annual subscription)<br/>
-App name inspired by LUCKI/tune
+App name inspired by LUCKI/tune<br/>
 Client secrets removed
