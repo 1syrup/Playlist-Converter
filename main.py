@@ -53,6 +53,7 @@ def index():
 
     if spotify_logged_in or youtube_logged_in:
         html += '<p><a href="/playlists">Go to Playlists</a></p>'
+        html += '<p><a href="/logout-all">Logout from All Platforms</a></p>'
 
     return html
 
@@ -193,6 +194,10 @@ def youtube_request_with_backoff(request, max_retries=5):
 def get_playlists():
     result = []
 
+    # Add "Back to Home" link at the top
+    result.append('<a href="/">Back to Home</a>')
+    result.append('<h1>Your Playlists</h1>')
+
     # Check Spotify login
     redirect_response, spotify_headers = check_session_and_get_headers()
     if redirect_response:
@@ -202,17 +207,24 @@ def get_playlists():
     spotify_profile = get_user_profile(spotify_headers)
     if spotify_profile:
         result.append(f"<h2>Spotify login: {spotify_profile['display_name']}</h2>")
-        #result.append(f"<p>Email: {spotify_profile.get('email', 'Not available')}</p>")
 
     # Check Google login
     if 'google_credentials' in session:
-        result.append("<h3>Your YouTube Playlists:</h3>")
         google_credentials = Credentials(**session['google_credentials'])
         youtube = build('youtube', 'v3', credentials=google_credentials)
-        request = youtube.playlists().list(part="snippet", mine=True, maxResults=50)
+        
+        # Get Google user info
+        channel_request = youtube.channels().list(part="snippet", mine=True)
+        channel_response = channel_request.execute()
+        if 'items' in channel_response and channel_response['items']:
+            channel = channel_response['items'][0]['snippet']
+            result.append(f"<h2>YouTube login: {channel['title']}</h2>")
+        
+        result.append("<h3>Your YouTube Playlists:</h3>")
+        playlist_request = youtube.playlists().list(part="snippet", mine=True, maxResults=50)
         try:
-            response = youtube_request_with_backoff(request)
-            for item in response.get('items', []):
+            playlist_response = youtube_request_with_backoff(playlist_request)
+            for item in playlist_response.get('items', []):
                 playlist_name = item['snippet']['title']
                 playlist_id = item['id']
                 playlist_link = f'<a href="/youtube-tracks/{playlist_id}/{playlist_name}">{playlist_name}</a>'
@@ -231,24 +243,9 @@ def get_playlists():
         playlist_link = f'<a href="/tracks/{playlist_id}/{playlist_name}">{playlist_name}</a>'
         result.append(playlist_link)
 
-    # If logged in with Google, get YouTube playlists
-    if 'google_credentials' in session:
-        result.append("<h3>Your YouTube Playlists:</h3>")
-        google_credentials = Credentials(**session['google_credentials'])
-        youtube = build('youtube', 'v3', credentials=google_credentials)
-        request = youtube.playlists().list(part="snippet", mine=True, maxResults=50)
-        response = request.execute()
-        for item in response.get('items', []):
-            playlist_name = item['snippet']['title']
-            playlist_id = item['id']
-            playlist_link = f'<a href="/youtube-tracks/{playlist_id}/{playlist_name}">{playlist_name}</a>'
-            result.append(playlist_link)
-
     s = '<br>'.join(result)
 
-    # Add logout links
-    logout_links = '<br><br><a href="/logout">Logout from Spotify</a> | <a href="/logout-google">Logout from Google</a>'
-    return s + logout_links
+    return s
 
 @app.route("/tracks/<playlist_id>/<playlist_name>")
 def get_tracks(playlist_id,playlist_name):
@@ -540,9 +537,12 @@ def get_user_profile(headers):
         return response.json()
     return None
     
-@app.route("/logout")
-def logout():
-    session.clear()
+@app.route("/logout-all")
+def logout_all():
+    session.pop('access_token', None)
+    session.pop('refresh_token', None)
+    session.pop('expires_at', None)
+    session.pop('google_credentials', None)
     return redirect("/")
     
 if __name__ == "__main__":
