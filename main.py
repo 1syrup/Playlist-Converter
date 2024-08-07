@@ -17,7 +17,7 @@ app.secret_key = "dingtone"
 
 #SPOTIFY OAUTH CREDS
 CLIENT_ID = "18b2aa38f6804350aecec03a75ee8af5"
-CLIENT_SECRET = 
+CLIENT_SECRET =
 REDIRECT_URI = "http://localhost:5000/callback"
 AUTH_URL = "https://accounts.spotify.com/authorize"
 TOKEN_URL = "https://accounts.spotify.com/api/token"
@@ -25,7 +25,7 @@ API_BASE_URL = "https://api.spotify.com/v1/"
 
 #GOOGLE OAUTH CREDS
 GOOGLE_CLIENT_ID = "515386421135-uqp27sgordktlfe65fi0t290vq8r9vcj.apps.googleusercontent.com"
-GOOGLE_CLIENT_SECRET = 
+GOOGLE_CLIENT_SECRET =
 GOOGLE_REDIRECT_URI = "http://localhost:5000/callback-google"
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
@@ -39,7 +39,10 @@ def index():
     spotify_logged_in = 'access_token' in session
     youtube_logged_in = 'google_credentials' in session
 
-    html = '<h1>Welcome to my Playlist App</h1>'
+    html = '''
+    <h1>Welcome to Tunevert</h1>
+    <img src="/static/tunevert.png" alt="Playlist App Image" style="width:200px;height:auto;">
+    '''
 
     if spotify_logged_in:
         html += '<p>You are currently logged in to Spotify</p>'
